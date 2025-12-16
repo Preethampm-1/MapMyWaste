@@ -71,6 +71,19 @@ MapMyWaste/
 ├── inspect_db.py
 ├── .gitignore
 
+🚀 Possible Next Steps
+
+Deploy to Render (backend + frontend)
+
+Switch to PostgreSQL + cloud image storage
+
+Add authentication for admin actions
+
+Convert frontend to PWA (installable app)[optional]
+
+UI/UX polish and filters
+
+Analytics & waste hotspot detection
 
 ---
 

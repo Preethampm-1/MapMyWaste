@@ -1,0 +1,76 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ----------------------------- */
+/* Slide-out Admin Drawer Panel  */
+/* ----------------------------- */
+
+.admin-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100vh;
+  background: #ffffff;
+  transform: translateX(100%);   /* Hidden by default */
+  transition: transform 0.28s ease-out;
+  box-shadow: -6px 0 20px rgba(0,0,0,0.15);
+  padding: 14px;
+  z-index: 2000;
+  overflow-y: auto;
+}
+
+/* When drawer is open */
+.admin-drawer.open {
+  transform: translateX(0);
+}
+
+/* Mobile-friendly width */
+@media (max-width: 900px) {
+  .admin-drawer {
+    width: 100%;
+  }
+}
+
+/* Custom marker (circle) used in App.js */
+.custom-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

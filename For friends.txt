@@ -1,1 +1,41 @@
 
+🧑‍🤝‍🧑 HOW YOUR FRIENDS SHOULD CONTINUE
+1️⃣ Clone the repository
+
+Each friend runs:
+
+git clone https://github.com/Preethampm-1/MapMyWaste.git
+cd MapMyWaste
+
+🔧 BACKEND SETUP (for your friends):
+cd backend
+python -m venv venv
+
+Activate venv:
+
+Windows
+
+venv\Scripts\Activate
+
+Install dependencies:
+pip install -r requirements.txt
+
+Run backend:
+python app.py
+
+
+Backend runs at:
+
+http://127.0.0.1:5000
+
+💻 FRONTEND SETUP (for your friends):
+cd frontend
+npm install
+npm start
+
+
+Frontend runs at:
+
+http://localhost:3000
+
+Ctrl+Shift+B to run both backend and frontend simultaneously

@@ -36,3 +36,5 @@ npm start
 Frontend runs at:
 
 http://localhost:3000
+
+Ctrl+Shift+B to run both backend and frontend simultaneously

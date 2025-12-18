@@ -55,7 +55,7 @@ Switch to PostgreSQL + cloud image storage
 
 Add authentication for admin actions
 
-Convert frontend to PWA (installable app)
+Convert frontend to PWA (installable app)[optional]
 
 UI/UX polish and filters
 

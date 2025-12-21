@@ -1,4 +1,10 @@
 # backend/app.py
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  
+
+print(os.getenv('JWT_SECRET_KEY')) 
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS

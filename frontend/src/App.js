@@ -1,12 +1,19 @@
-
 // frontend/src/App.js
 import React, { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+  Polyline,
+  useMap
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import axios from "axios";
 import Admin from "./Admin";
-import "./index.css"; // ensure CSS file import (or App.css)
+import "./index.css";
 
 // Fix Leaflet default icon paths (CRA)
 delete L.Icon.Default.prototype._getIconUrl;
@@ -43,6 +50,7 @@ function App() {
   const [form, setForm] = useState({ title: "", description: "", image: null });
   const [showAdmin, setShowAdmin] = useState(false);
   const [routePolyline, setRoutePolyline] = useState(null);
+  const [adminRefreshKey, setAdminRefreshKey] = useState(0);
   const mapRef = useRef(null);
 
   useEffect(() => {
@@ -50,17 +58,18 @@ function App() {
   }, []);
 
   async function loadReports() {
-    try {
-      const res = await axios.get(backendBase + "/api/reports");
-      setReports(res.data || []);
-    } catch (err) {
-      console.error("Error loading reports", err);
-    }
+    const res = await axios.get(`${backendBase}/api/reports`);
+    setReports(res.data || []);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!latLng) { alert("Click the map to pick a location."); return; }
+
+    if (!latLng) {
+      alert("Click the map to pick a location.");
+      return;
+    }
+
     const fd = new FormData();
     fd.append("title", form.title);
     fd.append("description", form.description);
@@ -68,21 +77,19 @@ function App() {
     fd.append("longitude", latLng[1]);
     if (form.image) fd.append("image", form.image);
 
-    try {
-      await axios.post(backendBase + "/api/reports", fd);
-      setForm({ title: "", description: "", image: null });
-      setLatLng(null);
-      loadReports();
-      alert("Report saved!");
-    } catch (err) {
-      console.error("Submit error", err);
-      alert("Submit failed: " + (err.response?.data?.error || err.message));
-    }
+    await axios.post(`${backendBase}/api/reports`, fd);
+
+    setForm({ title: "", description: "", image: null });
+    setLatLng(null);
+
+    loadReports();
+    setAdminRefreshKey(k => k + 1);
+
+    alert("Report saved!");
   }
 
-  // marker color based on status
   function iconForStatus(status) {
-    const color = status === "resolved" ? "green" : (status === "in-progress" ? "orange" : "red");
+    const color = status === "resolved" ? "green" : "red";
     return new L.DivIcon({
       className: "custom-marker",
       html: `<div style="background:${color};width:18px;height:18px;border-radius:50%;border:2px solid white;"></div>`,
@@ -91,57 +98,102 @@ function App() {
     });
   }
 
-  // Admin route handler
   function handleRouteCreated(route) {
     const poly = route.map(p => [p.latitude, p.longitude]);
-    setRoutePolyline(poly);
-    // optionally close admin: handled by Admin caller
+    setRoutePolyline(null);
+    setTimeout(() => setRoutePolyline([...poly]), 0);
   }
 
   return (
-    <div style={{ padding: 12 }}>
-      <h2 style={{ display: "inline-block", marginRight: 12 }}>MapMyWaste</h2>
-      <button onClick={() => setShowAdmin(true)} style={{ marginLeft: 8 }}>Admin</button>
+    <div className="app-root">
+      <div className="app-header">
+        <h2>MapMyWaste</h2>
+        <button onClick={() => setShowAdmin(true)}>Admin</button>
+      </div>
 
-      <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-        <div style={{ flex: 1, position: "relative" }}>
-          <MapContainer center={[20, 0]} zoom={2} style={{ height: 560 }} whenCreated={map => (mapRef.current = map)}>
+      {/* ===== MAIN LAYOUT ===== */}
+      <div className="main-layout">
+        {/* ===== MAP ===== */}
+        <div className="map-wrapper">
+          <MapContainer
+            key={`${reports.length}-${routePolyline ? routePolyline.length : 0}`}
+            center={[20, 0]}
+            zoom={2}
+            whenCreated={map => (mapRef.current = map)}
+          >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <LocationSelector setLatLng={setLatLng} />
 
-            {latLng && <Marker position={latLng}><Popup>Selected location</Popup></Marker>}
+            {latLng && (
+              <Marker position={latLng}>
+                <Popup>Selected</Popup>
+              </Marker>
+            )}
 
             {reports.map(r => (
-              <Marker key={r.id} position={[r.latitude, r.longitude]} icon={iconForStatus(r.status)}>
+              <Marker
+                key={r.id}
+                position={[r.latitude, r.longitude]}
+                icon={iconForStatus(r.status)}
+              >
                 <Popup>
-                  <b>{r.title || "Report"}</b><br/>
-                  {r.description}<br/>
-                  <small>Status: {r.status}</small><br/>
-                  {r.image_url && <img src={backendBase + r.image_url} alt="" style={{width:150, marginTop:6}}/>}
+                  <b>{r.title}</b><br />
+                  {r.description}<br />
+                  <small>Status: {r.status}</small>
                 </Popup>
               </Marker>
             ))}
 
-            {routePolyline && <Polyline positions={routePolyline} />}
-            {routePolyline && <FitBounds positions={routePolyline} />}
+            {routePolyline && (
+              <>
+                <Polyline positions={routePolyline} />
+                <FitBounds positions={routePolyline} />
+              </>
+            )}
           </MapContainer>
         </div>
 
-        <div style={{ width: 340 }}>
+        {/* ===== FORM ===== */}
+        <div className="form-wrapper panel">
           <form onSubmit={handleSubmit}>
-            <input placeholder="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required style={{width:"100%"}} /><br/><br/>
-            <textarea placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} style={{width:"100%", height:80}} /><br/>
-            <input type="file" onChange={e => setForm({ ...form, image: e.target.files[0] })} accept="image/*"/><br/><br/>
-            <p>Click the map to choose a location. Selected: {latLng ? latLng.join(", ") : "none"}</p>
-            <button type="submit">Submit Report</button>
+            <input
+              placeholder="Title"
+              value={form.title}
+              onChange={e => setForm({ ...form, title: e.target.value })}
+              required
+            />
+
+            <textarea
+              placeholder="Description"
+              value={form.description}
+              onChange={e => setForm({ ...form, description: e.target.value })}
+            />
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={e => setForm({ ...form, image: e.target.files[0] })}
+            />
+
+            <button type="submit" className="primary">
+              Submit Report
+            </button>
           </form>
         </div>
       </div>
 
-      {/* Slide-out admin drawer */}
-      <div className={`admin-drawer ${showAdmin ? "open" : ""}`}>
-        <Admin backendBase={backendBase} onClose={() => setShowAdmin(false)} onRouteCreated={handleRouteCreated} />
-      </div>
+      {/* ===== ADMIN ===== */}
+      {showAdmin && (
+        <div className="admin-drawer open">
+          <Admin
+            backendBase={backendBase}
+            onClose={() => setShowAdmin(false)}
+            onRouteCreated={handleRouteCreated}
+            onDataChanged={loadReports}
+            refreshKey={adminRefreshKey}
+          />
+        </div>
+      )}
     </div>
   );
 }
